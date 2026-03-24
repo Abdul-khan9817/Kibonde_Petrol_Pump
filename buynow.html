@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Kibonde Fuels</title>
+<style>
+:root {
+  --orange: #FF9900;
+  --blue: #009CFF;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.4);
+  --card-bg: rgba(255,255,255,0.05);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+html, body { height: 100%; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--black), var(--blue));
+  color: var(--white);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+h1 {
+  margin-bottom: 24px;
+  font-size: 28px;
+  color: var(--white);
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  color: var(--white);
+  font-size: 14px;
+}
+
+select, input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 14px;
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+}
+
+select option, input {
+  background: var(--black);
+  color: var(--white);
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.summary {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: var(--white);
+  text-align: left;
+}
+
+.hidden { display: none; }
+
+button {
+  padding: 12px 24px;
+  margin-top: 16px;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+  width: 48%;
+}
+
+button:hover {
+  background: var(--blue);
+  transform: translateY(-2px);
+}
+
+button + button { margin-left: 4%; }
+
+footer {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  color: var(--white);
+  padding: 24px;
+  font-size: 13px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+footer a { color: var(--white); text-decoration: none; transition: color 0.2s; }
+footer a:hover { color: var(--orange); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <h1>Buy Fuel</h1>
+
+    <label for="fuelType">Fuel Type</label>
+    <select id="fuelType">
+      <option value="Petrol">Petrol</option>
+      <option value="Diesel">Diesel</option>
+    </select>
+
+    <label for="litres">Number of Litres</label>
+    <input type="number" id="litres" min="1" placeholder="Enter number of litres" />
+
+    <label>Mode</label>
+    <div class="radio-group">
+      <label><input type="radio" name="mode" value="Pickup" checked /> Pickup</label>
+      <label><input type="radio" name="mode" value="Delivery" /> Delivery</label>
+    </div>
+
+    <div id="locationContainer" class="hidden">
+      <label for="location">Delivery Location</label>
+      <input type="text" id="location" placeholder="Enter delivery location" />
+    </div>
+
+    <label for="coupon">Coupon Code (optional)</label>
+    <input type="text" id="coupon" placeholder="Enter coupon code" />
+
+    <div class="summary" id="summary">
+      <strong>Summary:</strong><br>
+      Fuel: Petrol<br>
+      Litres: 0<br>
+      Mode: Pickup<br>
+      Location: N/A<br>
+      Coupon: N/A<br>
+      Price: $0.00
+    </div>
+
+    <div style="display:flex; justify-content: space-between;">
+      <button id="payCashBtn">Pay with Cash</button>
+      <button id="payNowBtn">Pay Now</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <a href="contact.html">Contact</a>
+  <a href="help.html">Help</a>
+  <a href="about.html">About</a>
+</footer>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const fuelTypeEl = document.getElementById('fuelType');
+const litresEl = document.getElementById('litres');
+const modeEls = document.getElementsByName('mode');
+const locationContainer = document.getElementById('locationContainer');
+const locationEl = document.getElementById('location');
+const couponEl = document.getElementById('coupon');
+const summaryEl = document.getElementById('summary');
+const payCashBtn = document.getElementById('payCashBtn');
+const payNowBtn = document.getElementById('payNowBtn');
+
+const loggedInUserId = localStorage.getItem('user_id');
+if(!loggedInUserId){
+  alert('No user logged in. Redirecting to login.');
+  window.location.href = 'login.html';
+}
+
+modeEls.forEach(r => r.addEventListener('change', () => {
+  if(document.querySelector('input[name="mode"]:checked').value === 'Delivery'){
+    locationContainer.classList.remove('hidden');
+  } else {
+    locationContainer.classList.add('hidden');
+  }
+  updateSummary();
+}));
+
+function calculatePrice(fuel, litres){
+  let pricePerLitre = 0;
+  if(fuel === 'Petrol') pricePerLitre = litres > 100 ? 1.0 : 1.1;
+  if(fuel === 'Diesel') pricePerLitre = litres > 100 ? 1.2 : 1.5;
+  return pricePerLitre * litres;
+}
+
+async function updateSummary(){
+  const fuel = fuelTypeEl.value;
+  const litres = parseFloat(litresEl.value) || 0;
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const location = mode === 'Delivery' ? locationEl.value || 'N/A' : 'N/A';
+  const couponCode = couponEl.value.trim();
+  let price = calculatePrice(fuel, litres);
+  let couponDisplay = 'N/A';
+
+  if(couponCode){
+    const { data: couponData } = await supabase.from('coupons').select('discount_percent').eq('code', couponCode).single();
+    if(couponData){
+      const discount = parseFloat(couponData.discount_percent);
+      price = price * (1 - discount/100);
+      couponDisplay = `${couponCode} (${discount}% off)`;
+    } else {
+      couponDisplay = 'Invalid';
+    }
+  }
+
+  summaryEl.innerHTML = `<strong>Summary:</strong><br>
+    Fuel: ${fuel}<br>
+    Litres: ${litres}<br>
+    Mode: ${mode}<br>
+    Location: ${location}<br>
+    Coupon: ${couponDisplay}<br>
+    Price: $${price.toFixed(2)}`;
+}
+
+[fuelTypeEl, litresEl, locationEl, couponEl].forEach(el => el.addEventListener('input', updateSummary));
+
+function generateOrderNumber(){
+  const part1 = Math.floor(Math.random()*90)+10;
+  const part2 = Math.floor(Math.random()*9000)+1000;
+  const part3 = Math.floor(Math.random()*900)+100;
+  return `KN ${part1} ${part2} ${part3}`;
+}
+
+async function proceedPayment(modeOfPayment){
+  const fuel = fuelTypeEl.value;
+  const litres = parseFloat(litresEl.value);
+  if(!litres || litres <= 0){ alert('Enter valid litres'); return; }
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const location = mode === 'Delivery' ? locationEl.value : null;
+  if(mode === 'Delivery' && (!location || location.trim() === '')){ alert('Enter delivery location'); return; }
+
+  let price = calculatePrice(fuel, litres);
+  const couponCode = couponEl.value.trim();
+  if(couponCode){
+    const { data: couponData } = await supabase.from('coupons').select('discount_percent').eq('code', couponCode).single();
+    if(couponData) price = price * (1 - parseFloat(couponData.discount_percent)/100);
+  }
+
+  const order_number = generateOrderNumber();
+  const { error } = await supabase.from('orders').insert([{
+    user_id: parseInt(loggedInUserId),
+    fuel_type: fuel,
+    number_of_litres: litres,
+    delivery_location: location,
+    mode_of_payment: modeOfPayment,
+    price: price.toFixed(2),
+    order_number,
+    status: 'Pending'
+  }]);
+
+  if(error) alert('Error placing order: ' + error.message);
+  else {
+    alert(`Order placed successfully! Your order number: ${order_number}\nTotal Price: $${price.toFixed(2)}`);
+    window.location.href = 'vieworders.html';
+  }
+}
+
+payCashBtn.addEventListener('click', ()=> proceedPayment('Cash'));
+payNowBtn.addEventListener('click', ()=> proceedPayment('PayNow'));
+
+updateSummary();
+</script>
+
+</body>
+</html>

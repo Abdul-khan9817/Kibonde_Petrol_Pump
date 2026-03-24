@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
+  <title>Kibonde Fuels</title>
+  <style>
+    :root {
+      --orange: #FF9900;
+      --blue: #009CFF;
+      --black: #0B1F3F;
+      --white: #ffffff;
+      --overlay: rgba(0,0,0,0.4);
+      --card-bg: rgba(255,255,255,0.05);
+    }
+
+    * { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+    html, body { height: 100%; }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--black), var(--blue));
+      color: var(--white);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top:0; left:0;
+      width:100%;
+      height:100%;
+      background: var(--overlay);
+      z-index: -1;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      color: var(--white);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    header .logo { font-weight: 700; font-size: 24px; }
+    header nav a {
+      color: var(--white);
+      text-decoration: none;
+      margin-left: 16px;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    header nav a:hover { color: var(--orange); }
+    .profile { position: relative; display: inline-block; }
+    .profile-btn {
+      background: transparent;
+      border: none;
+      color: var(--white);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 28px;
+      background: var(--card-bg);
+      color: var(--white);
+      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .dropdown button {
+      display: block;
+      padding: 12px 16px;
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      color: var(--white);
+      font-weight: 600;
+    }
+    .dropdown button:hover { background: rgba(255,255,255,0.1); }
+
+    .container {
+      flex: 1;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 { margin-bottom: 32px; font-size: 32px; color: var(--white); text-shadow: 1px 1px 6px rgba(0,0,0,0.5); }
+
+    /* Services Cards */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+    .service-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 40px 20px;
+      cursor: pointer;
+      transition: transform 0.3s, background 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+    }
+    .service-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255,255,255,0.1);
+    }
+    .service-card h2 {
+      margin-top: 16px;
+      font-size: 20px;
+      color: var(--white);
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+
+    footer {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      color: var(--white);
+      padding: 24px;
+      font-size: 13px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    footer a { color: var(--white); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--orange); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Kibonde Fuels</div>
+  <nav>
+    
+    <div class="Logout">
+      <button class="profile-btn" id="profileBtn">Logout ▼</button>
+      <div class="dropdown" id="profileDropdown">
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<div class="container">
+  <h1 id="welcomeMsg">Welcome!</h1>
+
+  <div class="services-grid">
+    <div class="service-card" id="buyBtn">
+      <i class="fas fa-gas-pump" style="font-size:40px; color: var(--orange);"></i>
+      <h2>Buy Fuel</h2>
+    </div>
+    <div class="service-card" id="viewOrdersBtn">
+      <i class="fas fa-truck" style="font-size:40px; color: var(--orange);"></i>
+      <h2>View Orders</h2>
+    </div>
+    <div class="service-card" onclick="window.location.href='delivery.html'">
+      <i class="fas fa-map-marker-alt" style="font-size:40px; color: var(--orange);"></i>
+      <h2>Delivery</h2>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <a href="contact.html">Contact</a>
+  <a href="help.html">Help</a>
+  <a href="about.html">About</a>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const profileBtn = document.getElementById('profileBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const welcomeMsg = document.getElementById('welcomeMsg');
+
+  profileBtn.addEventListener('click', () => {
+    profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_name');
+    window.location.href = 'login.html';
+  });
+
+  const userId = localStorage.getItem('user_id');
+  const userName = localStorage.getItem('user_name');
+
+  if (!userId || !userName) {
+    alert('No user logged in. Redirecting to login.');
+    window.location.href = 'login.html';
+  } else {
+    welcomeMsg.textContent = `Welcome, ${userName}!`;
+  }
+
+  document.getElementById('buyBtn').addEventListener('click', () => {
+    window.location.href = 'buynow.html';
+  });
+  document.getElementById('viewOrdersBtn').addEventListener('click', () => {
+    window.location.href = 'vieworders.html';
+  });
+</script>
+
+</body>
+</html>

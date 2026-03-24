@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Kibonde Fuels</title>
+<style>
+:root {
+  --red: #FF4D4D;
+  --orange: #FF9900;
+  --green: #00FF80;
+  --blue: #009CFF;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.3);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--black), var(--blue));
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+header {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.order-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.order-info {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.order-info div { margin: 4px 0; }
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-top: 20px;
+}
+
+.progress-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  right: 12px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-50%);
+  z-index: 0;
+  border-radius: 2px;
+}
+
+.progress-step {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+
+.progress-step svg {
+  width: 24px;
+  height: 24px;
+  fill: rgba(255,255,255,0.5);
+  display: none;
+  transition: fill 0.3s;
+}
+
+.progress-step.current svg {
+  display: block;
+  transform: scale(1.2);
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.progress-labels div {
+  width: 40px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header>Kibonde Fuels — Delivery Tracker</header>
+
+<div id="ordersContainer"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const ordersContainer = document.getElementById('ordersContainer');
+const userId = parseInt(localStorage.getItem('user_id'), 10);
+
+function getStepIndex(status) {
+  switch(status.toLowerCase()) {
+    case 'pending': return 0;
+    case 'in transit': return 1;
+    case 'collected':
+    case 'delivered': return 2;
+    default: return 0;
+  }
+}
+
+function createOrderCard(order) {
+  const card = document.createElement('div');
+  card.className = 'order-card';
+
+  card.innerHTML = `
+    <div class="order-info">
+      <div><strong>Order #:</strong> ${order.order_number}</div>
+      <div><strong>Fuel:</strong> ${order.fuel_type}</div>
+      <div><strong>Litres:</strong> ${order.number_of_litres}</div>
+      <div><strong>Location:</strong> ${order.delivery_location}</div>
+      <div><strong>Status:</strong> ${order.status}</div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-step" data-step="0">
+        <!-- Person icon SVG -->
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+      <div class="progress-step" data-step="1">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+      <div class="progress-step" data-step="2">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+    </div>
+    <div class="progress-labels">
+      <div>Pending</div>
+      <div>In Transit</div>
+      <div>Delivered</div>
+    </div>
+  `;
+
+  const steps = card.querySelectorAll('.progress-step');
+  const currentIndex = getStepIndex(order.status);
+
+  steps.forEach((step, index) => {
+    const svg = step.querySelector('svg');
+    step.classList.remove('current');
+    svg.style.fill = 'rgba(255,255,255,0.5)';
+    if(index === currentIndex) {
+      step.classList.add('current');
+      if(currentIndex === 0) svg.style.fill = 'var(--red)';
+      if(currentIndex === 1) svg.style.fill = 'var(--orange)';
+      if(currentIndex === 2) svg.style.fill = 'var(--green)';
+    }
+  });
+
+  return card;
+}
+
+async function fetchOrders() {
+  ordersContainer.innerHTML = '';
+  if(!userId) return;
+  const { data: orders, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    ordersContainer.innerHTML = `<p>Error fetching orders: ${error.message}</p>`;
+    return;
+  }
+
+  orders.forEach(order => {
+    const card = createOrderCard(order);
+    ordersContainer.appendChild(card);
+  });
+}
+
+fetchOrders();
+setInterval(fetchOrders, 10000);
+</script>
+
+</body>
+</html>

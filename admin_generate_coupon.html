@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Kibonde Fuels</title>
+<style>
+:root {
+  --orange: #FF9900;
+  --blue: #009CFF;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.4);
+  --card-bg: rgba(255,255,255,0.05);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+html, body { height: 100%; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--black), var(--blue));
+  color: var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: var(--white);
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
+}
+
+label {
+  display: block;
+  margin-top: 16px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--white);
+}
+
+select, input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 14px;
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+}
+
+select option, input {
+  background: var(--black);
+  color: var(--white);
+}
+
+button {
+  margin-top: 24px;
+  padding: 12px;
+  width: 100%;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+}
+
+button:hover {
+  background: var(--blue);
+  transform: translateY(-2px);
+}
+
+.msg {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.msg.success { background: rgba(0,255,128,0.2); color: #00ff80; }
+.msg.error { background: rgba(255,0,0,0.2); color: #ff4d4d; }
+
+@media(max-width: 480px){
+  .card { padding: 24px; border-radius: 12px; }
+  h1 { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Generate Coupon</h1>
+
+  <label for="userSelect">Select User</label>
+  <select id="userSelect">
+    <option value="">-- Select User --</option>
+  </select>
+
+  <label for="discountSelect">Select Discount %</label>
+  <select id="discountSelect">
+    <option value="">-- Select Discount --</option>
+    <option value="5">5%</option>
+    <option value="10">10%</option>
+    <option value="15">15%</option>
+    <option value="20">20%</option>
+    <option value="25">25%</option>
+    <option value="30">30%</option>
+  </select>
+
+  <button id="generateBtn">Generate Coupon</button>
+  <div id="message" class="msg"></div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const userSelect = document.getElementById('userSelect');
+const discountSelect = document.getElementById('discountSelect');
+const generateBtn = document.getElementById('generateBtn');
+const messageEl = document.getElementById('message');
+
+function showMessage(text, type='success'){
+  messageEl.textContent = text;
+  messageEl.className = `msg ${type}`;
+}
+
+// Load users
+async function loadUsers() {
+  const { data, error } = await supabase.from('users').select('user_id, name, email');
+  if(error){
+    showMessage('Error loading users: ' + error.message, 'error');
+    return;
+  }
+  data.forEach(user => {
+    const option = document.createElement('option');
+    option.value = user.user_id; // integer ID
+    option.textContent = `${user.name} (${user.email})`;
+    userSelect.appendChild(option);
+  });
+}
+
+// Generate coupon code
+function generateCouponCode(){
+  return 'CP' + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// Handle button click
+generateBtn.addEventListener('click', async () => {
+  const userId = userSelect.value;
+  const discount = discountSelect.value;
+
+  if(!userId || !discount){
+    showMessage('Please select both user and discount.', 'error');
+    return;
+  }
+
+  const code = generateCouponCode();
+
+  const { data, error } = await supabase.from('coupons').insert([{
+    code,
+    discount_percent: discount,
+    user_id: parseInt(userId) // make sure it's integer
+  }]);
+
+  if(error){
+    showMessage('Error generating coupon: ' + error.message, 'error');
+  } else {
+    showMessage(`Coupon ${code} generated for ${discount}% discount for the selected user!`, 'success');
+  }
+});
+
+loadUsers();
+</script>
+</body>
+</html>

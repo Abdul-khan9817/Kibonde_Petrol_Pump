@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Kizongo Fuel</title>
+<style>
+:root {
+  --accent: #0b76ef;
+  --orange: #FF9900;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.2);
+  --card-bg: rgba(255,255,255,0.05);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--black), var(--accent));
+  color: var(--white);
+  padding: 24px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+header .logo {
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.profile {
+  position: relative;
+}
+
+.profile-btn {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: var(--card-bg);
+  color: var(--white);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.dropdown button {
+  display: block;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.dropdown button:hover {
+  background: var(--accent);
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+h1#welcomeMsg {
+  font-size: 28px;
+  text-align: center;
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
+}
+
+.buttons {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 32px;
+  font-size: 16px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--accent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.buttons button:hover {
+  background: var(--orange);
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  stroke: currentColor;
+  transition: transform 0.2s;
+}
+
+.buttons button:hover .btn-icon {
+  transform: scale(1.1);
+}
+
+@media(max-width: 480px){
+  .buttons { flex-direction: column; gap: 16px; }
+  .buttons button { width: 100%; }
+  header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Kizongo Fuel Admin</div>
+  <div class="profile">
+    <button class="profile-btn" id="profileBtn">Profile ▼</button>
+    <div class="dropdown" id="profileDropdown">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <h1 id="welcomeMsg">Welcome, Admin!</h1>
+  <div class="buttons">
+    <button id="manageOrdersBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 0a2 2 0 012 2v4a2 2 0 01-2 2H7a2 2 0 01-2-2v-4a2 2 0 012-2h6zM9 12V6a2 2 0 012-2h2a2 2 0 012 2v6"/>
+      </svg>
+      Manage Orders
+    </button>
+
+    <button id="generateCouponBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2-8h.01M6 8h.01M3 6h18v12H3V6z"/>
+      </svg>
+      Generate Coupon
+    </button>
+
+    <button id="viewMessagesBtn" onclick="window.location.href='feedback.html'">
+      <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m0 8v-8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2z"/>
+      </svg>
+      View Messages
+    </button>
+  </div>
+</div>
+
+
+<script type="module">
+  const profileBtn = document.getElementById('profileBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const welcomeMsg = document.getElementById('welcomeMsg');
+
+  // Toggle profile dropdown
+  profileBtn.addEventListener('click', () => {
+    profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    window.location.href = 'admin_login.html';
+  });
+
+  // Get admin name from query string
+  const params = new URLSearchParams(window.location.search);
+  const adminName = params.get('name') || 'Admin';
+  welcomeMsg.textContent = `Welcome, ${adminName}!`;
+
+  // Button actions
+  document.getElementById('manageOrdersBtn').addEventListener('click', () => {
+    window.location.href = 'admin_manage_orders.html?name=' + encodeURIComponent(adminName);
+  });
+
+  document.getElementById('generateCouponBtn').addEventListener('click', () => {
+    window.location.href = 'admin_generate_coupon.html?name=' + encodeURIComponent(adminName);
+  });
+</script>
+
+</body>
+</html>

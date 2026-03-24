@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Kibonde Fuels</title>
+<style>
+:root {
+  --accent: #0b76ef;
+  --orange: #FF9900;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.4);
+  --card-bg: rgba(255,255,255,0.05);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--black), var(--accent));
+  color: var(--white);
+  padding: 24px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+header {
+  padding: 16px 24px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  margin-bottom: 32px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--card-bg);
+  padding: 32px;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+h1 { text-align: center; margin-bottom: 24px; font-size: 32px; }
+
+label { display:block; margin-top: 12px; margin-bottom:4px; font-size:14px; color:var(--white); }
+input, textarea {
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.05);
+  color:var(--white);
+  font-size:14px;
+}
+
+button {
+  margin-top: 20px;
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:12px;
+  font-weight:600;
+  background:var(--accent);
+  color:var(--white);
+  cursor:pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+button:hover { background:var(--orange); transform: translateY(-2px); }
+
+.msg {
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+.msg.success { background: #065f46; color: #ecfdf5; }
+.msg.error { background: #991b1b; color: #fff1f2; }
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-left-color: white;
+  display: inline-block;
+  vertical-align: middle;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media(max-width: 480px) {
+  .container { padding: 24px; border-radius: 12px; }
+  h1 { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+
+<header>Contact Us</header>
+
+<div class="container">
+  <h1>Get in Touch</h1>
+  <p>If you have any questions, inquiries, or feedback, feel free to reach out to us. Our team is here to help and provide information regarding our fuel supply services.</p>
+
+  <div id="message" aria-live="polite"></div>
+
+  <form id="contactForm">
+    <label for="name">Name</label>
+    <input id="name" type="text" placeholder="Your Name" required>
+
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="Your Email" required>
+
+    <label for="messageInput">Message</label>
+    <textarea id="messageInput" rows="5" placeholder="Write your message..." required></textarea>
+
+    <button type="submit" id="submitBtn">Send Message</button>
+  </form>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const contactForm = document.getElementById('contactForm');
+const messageEl = document.getElementById('message');
+const submitBtn = document.getElementById('submitBtn');
+
+function showMessage(text, type='success'){
+  messageEl.innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+
+function clearMessage(){ messageEl.innerHTML = ''; }
+
+contactForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMessage();
+
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const message = document.getElementById('messageInput').value.trim();
+
+  submitBtn.disabled = true;
+  const prevText = submitBtn.textContent;
+  submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+
+  try {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .insert([{ name, email, message }]);
+
+    if (error) {
+      showMessage(error.message, 'error');
+    } else {
+      showMessage('Thank you! Your message has been sent.', 'success');
+      contactForm.reset();
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage('Unexpected error occurred', 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = prevText;
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
+  <title>Kibonde Fuels</title>
+  <style>
+    :root {
+      --orange: #FF9900;
+      --blue: #009CFF;
+      --black: #000000;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #0B1F3F, #009CFF);
+      color: var(--white);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4); /* subtle overlay to make text readable */
+      z-index: -1;
+    }
+    header {
+      width: 100%;
+      padding: 20px;
+      background: rgba(0,0,0,0.7);
+      color: var(--white);
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 36px;
+      margin-bottom: 12px;
+      color: var(--white);
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+    }
+    p {
+      margin-bottom: 32px;
+      font-size: 18px;
+      max-width: 600px;
+      color: var(--white);
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+    }
+    .buttons {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    .btn {
+      padding: 16px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--orange);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn:hover {
+      background: var(--blue);
+      transform: translateY(-2px);
+    }
+    .services-heading {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 40px 0 20px 0;
+      color: var(--white);
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+      width: 100%;
+      text-align: center;
+    }
+    .fuel-grid {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-top: 20px;
+      gap: 24px;
+    }
+    .fuel-card {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      background: rgba(0,0,0,0.2);
+    }
+    .fuel-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+      filter: brightness(0.8);
+    }
+    .fuel-card:hover img {
+      transform: scale(1.2);
+    }
+    .fuel-label {
+      position: absolute;
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.5);
+      padding: 20px 30px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 22px;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.8;
+      transition: opacity 0.4s ease, background 0.4s ease;
+      text-align: center;
+    }
+    .fuel-card:hover .fuel-label {
+      opacity: 1;
+      background: rgba(0,0,0,0.7);
+    }
+    footer {
+      padding: 16px;
+      color: var(--white);
+      font-size: 13px;
+      text-align: center;
+      background: rgba(0,0,0,0.7);
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      header { font-size: 22px; padding: 16px; }
+      h1 { font-size: 28px; }
+      p { font-size: 16px; }
+      .btn { font-size: 14px; padding: 12px 18px; }
+      .fuel-card { height: 300px; }
+      .fuel-label { font-size: 18px; padding: 14px 20px; top: 70%; }
+      .services-heading { font-size: 24px; margin: 30px 0 15px 0; }
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 22px; }
+      .buttons { flex-direction: column; gap: 12px; }
+      .btn { width: 100%; max-width: 250px; }
+      .fuel-card { height: 250px; }
+      .fuel-label { font-size: 16px; top: 70%; }
+      .services-heading { font-size: 20px; margin: 20px 0 10px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  Kibonde Fuels
+</header>
+
+<main>
+  <h1>Welcome to Kibonde Fuels</h1>
+  <p>Efficient fuel delivery and pickup services at your fingertips. Buy fuel, track your orders, and enjoy exclusive discounts.</p>
+  
+  <div class="buttons">
+    <button class="btn" onclick="window.location.href='login.html'">User Login</button>
+    <button class="btn" onclick="window.location.href='admin_login.html'">Admin Login</button>
+  </div>
+
+  <div class="services-heading">Our Services</div>
+
+  <div class="fuel-grid">
+  <a href="login.html" class="fuel-card">
+    <img src="images/petrol.jpg" alt="Petrol">
+    <div class="fuel-label">Petrol</div>
+  </a>
+  <a href="login.html" class="fuel-card">
+    <img src="images/diesel.jpg" alt="Diesel">
+    <div class="fuel-label">Diesel</div>
+  </a>
+  <a href="login.html" class="fuel-card">
+    <img src="images/deliver.jpg" alt="Delivery">
+    <div class="fuel-label">Delivery</div>
+  </a>
+  <a href="login.html" class="fuel-card">
+    <img src="images/payment.jpg" alt="Cash & Online Payment">
+    <div class="fuel-label">Cash & Online Payment</div>
+  </a>
+</div>
+
+</main>
+
+<footer>
+  &copy; 2025 Kibonde Fuels. All rights reserved.
+</footer>
+
+</body>
+</html>
