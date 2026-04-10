@@ -158,12 +158,9 @@
   </form>
 </main>
 
+<script src="./frontend-api.js"></script>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const api = window.KibondeAPI;
 
 const adminForm = document.getElementById('adminForm');
 const messageEl = document.getElementById('message');
@@ -174,6 +171,14 @@ function showMessage(text, type='success'){
 }
 
 function clearMessage(){ messageEl.innerHTML = ''; }
+
+function getFriendlyErrorMessage(error, fallback) {
+  const message = String(error?.message || '');
+  if (/failed to fetch|networkerror|load failed/i.test(message)) {
+    return 'Cannot connect to server. Start backend on port 5000 and try again.';
+  }
+  return message || fallback;
+}
 
 adminForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -187,23 +192,41 @@ adminForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
 
   try {
-    const { data, error } = await supabase
-      .from('admins')
-      .select('name, password')
-      .eq('name', name)
-      .maybeSingle();
+    const { data } = await api.signinAdmin({ name, password });
 
-    if (error || !data || data.password !== password) {
+    if (!data) {
       showMessage('Invalid name or password', 'error');
     } else {
       showMessage(`Welcome, ${data.name}! Redirecting...`, 'success');
       localStorage.setItem('admin_name', data.name);
-      setTimeout(() => { window.location.href = 'admin_dashboard.html'; }, 1000);
+      setTimeout(() => {
+        window.location.href = `admin_dashboard.html?name=${encodeURIComponent(data.name)}`;
+      }, 600);
     }
 
   } catch (err) {
     console.error(err);
-    showMessage('Unexpected error occurred', 'error');
+    const message = getFriendlyErrorMessage(err, err?.message || 'Unexpected error occurred');
+
+    if (/invalid name or password/i.test(message)) {
+      const shouldReset = window.confirm('Invalid password for this admin. Reset password to the one you entered now?');
+      if (shouldReset) {
+        try {
+          const { data } = await api.resetAdminPassword({ name, password });
+          showMessage(`Password reset successful for ${data.name}. Redirecting...`, 'success');
+          localStorage.setItem('admin_name', data.name);
+          setTimeout(() => {
+            window.location.href = `admin_dashboard.html?name=${encodeURIComponent(data.name)}`;
+          }, 600);
+          return;
+        } catch (resetError) {
+          showMessage(getFriendlyErrorMessage(resetError, 'Unable to reset password.'), 'error');
+          return;
+        }
+      }
+    }
+
+    showMessage(message, 'error');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = prevText;

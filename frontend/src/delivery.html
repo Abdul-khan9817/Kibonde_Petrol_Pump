@@ -127,12 +127,9 @@ header {
 
 <div id="ordersContainer"></div>
 
+<script src="./frontend-api.js"></script>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const api = window.KibondeAPI;
 
 const ordersContainer = document.getElementById('ordersContainer');
 const userId = parseInt(localStorage.getItem('user_id'), 10);
@@ -199,21 +196,16 @@ function createOrderCard(order) {
 async function fetchOrders() {
   ordersContainer.innerHTML = '';
   if(!userId) return;
-  const { data: orders, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  try {
+    const { data: orders } = await api.listOrders(userId);
 
-  if(error){
+    orders.forEach(order => {
+      const card = createOrderCard(order);
+      ordersContainer.appendChild(card);
+    });
+  } catch (error) {
     ordersContainer.innerHTML = `<p>Error fetching orders: ${error.message}</p>`;
-    return;
   }
-
-  orders.forEach(order => {
-    const card = createOrderCard(order);
-    ordersContainer.appendChild(card);
-  });
 }
 
 fetchOrders();

@@ -139,12 +139,9 @@ button:hover {
   <div id="message" class="msg"></div>
 </div>
 
+<script src="./frontend-api.js"></script>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const api = window.KibondeAPI;
 
 const userSelect = document.getElementById('userSelect');
 const discountSelect = document.getElementById('discountSelect');
@@ -158,17 +155,22 @@ function showMessage(text, type='success'){
 
 // Load users
 async function loadUsers() {
-  const { data, error } = await supabase.from('users').select('user_id, name, email');
-  if(error){
+  try {
+    const { data } = await api.listUsers();
+    if(!data){
+      showMessage('Error loading users', 'error');
+      return;
+    }
+    data.forEach(user => {
+      const option = document.createElement('option');
+      option.value = user.user_id; // integer ID
+      option.textContent = `${user.name} (${user.email})`;
+      userSelect.appendChild(option);
+    });
+  } catch (error) {
     showMessage('Error loading users: ' + error.message, 'error');
     return;
   }
-  data.forEach(user => {
-    const option = document.createElement('option');
-    option.value = user.user_id; // integer ID
-    option.textContent = `${user.name} (${user.email})`;
-    userSelect.appendChild(option);
-  });
 }
 
 // Generate coupon code
@@ -188,16 +190,15 @@ generateBtn.addEventListener('click', async () => {
 
   const code = generateCouponCode();
 
-  const { data, error } = await supabase.from('coupons').insert([{
-    code,
-    discount_percent: discount,
-    user_id: parseInt(userId) // make sure it's integer
-  }]);
-
-  if(error){
-    showMessage('Error generating coupon: ' + error.message, 'error');
-  } else {
+  try {
+    await api.createCoupon({
+      code,
+      discount_percent: parseInt(discount, 10),
+      user_id: parseInt(userId, 10)
+    });
     showMessage(`Coupon ${code} generated for ${discount}% discount for the selected user!`, 'success');
+  } catch (error) {
+    showMessage('Error generating coupon: ' + error.message, 'error');
   }
 });
 

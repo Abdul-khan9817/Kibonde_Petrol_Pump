@@ -124,13 +124,9 @@ tr:nth-child(even) { background: rgba(255,255,255,0.05); }
   </table>
 </div>
 
+<script src="./frontend-api.js"></script>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const api = window.KibondeAPI;
 
 const messagesTable = document.getElementById('messagesTable');
 const messageEl = document.getElementById('message');
@@ -141,13 +137,10 @@ function showMessage(text, type='success'){
 
 async function loadMessages() {
   try {
-    const { data, error } = await supabase
-      .from('contact_messages')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data } = await api.listMessages();
 
-    if (error) {
-      showMessage(error.message, 'error');
+    if (!data) {
+      showMessage('Failed to load messages', 'error');
       messagesTable.innerHTML = '<tr><td colspan="5" style="text-align:center;">Failed to load messages</td></tr>';
       return;
     }

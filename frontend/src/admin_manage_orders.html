@@ -183,12 +183,9 @@ button.updateBtn:hover {
   </div>
 </div>
 
+<script src="./frontend-api.js"></script>
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const api = window.KibondeAPI;
 
 const profileBtn = document.getElementById('profileBtn');
 const profileDropdown = document.getElementById('profileDropdown');
@@ -200,47 +197,51 @@ profileBtn.addEventListener('click', () => {
 });
 
 logoutBtn.addEventListener('click', () => {
-  window.location.href = 'admin_login.html';
+  window.location.href = 'admin-login.html';
 });
 
 async function fetchOrders(){
   ordersTableBody.innerHTML = '';
-  const { data: orders, error } = await supabase.from('orders').select('*');
-  if(error) { alert('Error fetching orders: ' + error.message); return; }
+  try {
+    const { data: orders } = await api.listOrders();
 
-  orders.forEach(order => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${order.order_number || ''}</td>
-      <td>${order.fuel_type || ''}</td>
-      <td>${order.number_of_litres || ''}</td>
-      <td>${order.delivery_location || ''}</td>
-      <td>${order.mode_of_payment || ''}</td>
-      <td>${order.price || ''}</td>
-      <td>
-        <select id="status-${order.order_id}">
-          <option value="pending" ${order.status==='pending'?'selected':''}>Pending</option>
-          <option value="in transit" ${order.status==='in transit'?'selected':''}>In Transit</option>
-          <option value="collected" ${order.status==='collected'?'selected':''}>Collected</option>
-          <option value="delivered" ${order.status==='delivered'?'selected':''}>Delivered</option>
-        </select>
-      </td>
-      <td><button class="updateBtn">Update</button></td>
-    `;
-    ordersTableBody.appendChild(row);
+    orders.forEach(order => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${order.order_number || ''}</td>
+        <td>${order.fuel_type || ''}</td>
+        <td>${order.number_of_litres || ''}</td>
+        <td>${order.delivery_location || ''}</td>
+        <td>${order.mode_of_payment || ''}</td>
+        <td>${order.price || ''}</td>
+        <td>
+          <select id="status-${order.order_id}">
+            <option value="pending" ${order.status==='pending'?'selected':''}>Pending</option>
+            <option value="in transit" ${order.status==='in transit'?'selected':''}>In Transit</option>
+            <option value="collected" ${order.status==='collected'?'selected':''}>Collected</option>
+            <option value="delivered" ${order.status==='delivered'?'selected':''}>Delivered</option>
+          </select>
+        </td>
+        <td><button class="updateBtn">Update</button></td>
+      `;
+      ordersTableBody.appendChild(row);
 
-    const updateBtn = row.querySelector('.updateBtn');
-    updateBtn.addEventListener('click', async () => {
-      const selectEl = document.getElementById(`status-${order.order_id}`);
-      const newStatus = selectEl.value;
-      const { data, error } = await supabase.from('orders').update({ status: newStatus }).eq('order_id', order.order_id);
-      if(error) alert('Error updating status: ' + error.message);
-      else {
+      const updateBtn = row.querySelector('.updateBtn');
+      updateBtn.addEventListener('click', async () => {
+        const selectEl = document.getElementById(`status-${order.order_id}`);
+        const newStatus = selectEl.value;
+        try {
+          await api.updateOrderStatus(order.order_id, newStatus);
         alert('Status updated successfully!');
         fetchOrders();
-      }
+        } catch (error) {
+          alert('Error updating status: ' + error.message);
+        }
+      });
     });
-  });
+  } catch (error) {
+    alert('Error fetching orders: ' + error.message);
+  }
 }
 
 fetchOrders();

@@ -179,13 +179,9 @@
     </form>
   </main>
 
+  <script src="./frontend-api.js"></script>
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const api = window.KibondeAPI;
 
     const authForm = document.getElementById('authForm');
     const toggleBtn = document.getElementById('toggleBtn');
@@ -199,6 +195,14 @@
     }
 
     function clearMessage(){ messageEl.innerHTML = ''; }
+
+    function getFriendlyErrorMessage(error, fallback) {
+      const message = String(error?.message || '');
+      if (/failed to fetch|networkerror|load failed/i.test(message)) {
+        return 'Cannot connect to server. Start backend on port 5000 and try again.';
+      }
+      return message || fallback;
+    }
 
     toggleBtn.addEventListener('click', ()=>{
       isSignUp = !isSignUp;
@@ -218,26 +222,17 @@
       const mobile = document.getElementById('mobile').value.trim();
 
       submitBtn.disabled = true;
-      const prevText = submitBtn.textContent;
       submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
 
       try{
         if(isSignUp){
-          const { data, error } = await supabase.from('users').insert([{ name, email, password, mobile_number: mobile }]);
-          if(error){
-            showMessage(error.message, 'error');
-          } else {
-            showMessage('Account created successfully. You can now sign in.', 'success');
-            toggleBtn.click();
-          }
+          await api.signupUser({ name, email, password, mobile_number: mobile });
+          showMessage('Account created successfully. You can now sign in.', 'success');
+          toggleBtn.click();
         } else {
-          const { data, error } = await supabase.from('users')
-            .select('user_id, name, email')
-            .eq('email', email)
-            .eq('password', password)
-            .single();
+          const { data } = await api.signinUser({ email, password });
 
-          if(error || !data){
+          if(!data){
             showMessage('Invalid email or password', 'error');
           } else {
             showMessage(`Welcome, ${data.name}!`, 'success');
@@ -248,10 +243,10 @@
         }
       } catch(err){
         console.error(err);
-        showMessage('Unexpected error occurred.', 'error');
+        showMessage(getFriendlyErrorMessage(err, 'Unexpected error occurred.'), 'error');
       } finally{
         submitBtn.disabled = false;
-        submitBtn.textContent = prevText;
+        submitBtn.textContent = isSignUp ? 'Sign up' : 'Sign in';
       }
     });
   </script>

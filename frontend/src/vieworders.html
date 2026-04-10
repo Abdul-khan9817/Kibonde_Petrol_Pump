@@ -129,13 +129,9 @@
   <a href="about.html">About</a>
 </footer>
 
+<script src="./frontend-api.js"></script>
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-  const SUPABASE_URL = 'https://ehprvihrdggcqkkrrycn.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocHJ2aWhyZGdnY3Fra3JyeWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNjM5MTMsImV4cCI6MjA3NDczOTkxM30.CtKfEMi-_D-1E_creWQFChGeqv8Ks8AOP2g6f4SdNVQ';
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const api = window.KibondeAPI;
 
   const ordersContainer = document.getElementById('ordersContainer');
   const backBtn = document.getElementById('backBtn');
@@ -153,22 +149,15 @@
   });
 
   async function loadOrders(){
-    const { data: orders, error } = await supabase.from('orders')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    try {
+      const { data: orders } = await api.listOrders(userId);
 
-    if(error){
-      ordersContainer.innerHTML = `<p class="no-orders">Error fetching orders: ${error.message}</p>`;
-      return;
-    }
+      if(!orders || orders.length === 0){
+        ordersContainer.innerHTML = `<p class="no-orders">You have no orders yet.</p>`;
+        return;
+      }
 
-    if(!orders || orders.length === 0){
-      ordersContainer.innerHTML = `<p class="no-orders">You have no orders yet.</p>`;
-      return;
-    }
-
-    let tableHTML = `<table>
+      let tableHTML = `<table>
       <thead>
         <tr>
           <th>Order #</th>
@@ -182,8 +171,8 @@
       </thead>
       <tbody>`;
 
-    orders.forEach(order => {
-      tableHTML += `<tr>
+      orders.forEach(order => {
+        tableHTML += `<tr>
         <td>${order.order_number || '-'}</td>
         <td>${order.fuel_type || '-'}</td>
         <td>${order.number_of_litres || '-'}</td>
@@ -192,10 +181,13 @@
         <td>${order.delivery_location || '-'}</td>
         <td>${order.status || '-'}</td>
       </tr>`;
-    });
+      });
 
-    tableHTML += `</tbody></table>`;
-    ordersContainer.innerHTML = tableHTML;
+      tableHTML += `</tbody></table>`;
+      ordersContainer.innerHTML = tableHTML;
+    } catch (error) {
+      ordersContainer.innerHTML = `<p class="no-orders">Error fetching orders: ${error.message}</p>`;
+    }
   }
 
   loadOrders();

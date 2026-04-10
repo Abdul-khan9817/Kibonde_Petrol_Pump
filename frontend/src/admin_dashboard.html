@@ -114,6 +114,68 @@ h1#welcomeMsg {
   flex-wrap: wrap;
 }
 
+.price-settings {
+  width: 100%;
+  max-width: 620px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.price-settings h2 {
+  margin-bottom: 8px;
+}
+
+.price-settings p {
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.price-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.price-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.12);
+  color: var(--white);
+  font-size: 15px;
+}
+
+.save-prices-btn {
+  margin-top: 16px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--orange);
+}
+
+.save-prices-btn:hover {
+  background: var(--accent);
+}
+
+.price-status {
+  margin-top: 12px;
+  min-height: 20px;
+  font-size: 14px;
+}
+
 .buttons button {
   display: flex;
   align-items: center;
@@ -153,6 +215,7 @@ h1#welcomeMsg {
   .buttons { flex-direction: column; gap: 16px; }
   .buttons button { width: 100%; }
   header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .price-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -192,27 +255,72 @@ h1#welcomeMsg {
       View Messages
     </button>
   </div>
+
+  <section class="price-settings">
+    <h2>Fuel Price Settings</h2>
+    <p>Set the current price per litre users see while ordering fuel.</p>
+    <div class="price-grid">
+      <div class="price-field">
+        <label for="petrolPriceInput">Petrol Price (per litre)</label>
+        <input type="number" id="petrolPriceInput" min="0" step="0.01" placeholder="e.g. 1.10" />
+      </div>
+      <div class="price-field">
+        <label for="dieselPriceInput">Diesel Price (per litre)</label>
+        <input type="number" id="dieselPriceInput" min="0" step="0.01" placeholder="e.g. 1.50" />
+      </div>
+    </div>
+    <button class="save-prices-btn" id="savePricesBtn">Save Fuel Prices</button>
+    <div class="price-status" id="priceStatus"></div>
+  </section>
 </div>
 
-
+<script src="./frontend-api.js"></script>
 <script type="module">
+  const api = window.KibondeAPI;
   const profileBtn = document.getElementById('profileBtn');
   const profileDropdown = document.getElementById('profileDropdown');
   const logoutBtn = document.getElementById('logoutBtn');
   const welcomeMsg = document.getElementById('welcomeMsg');
+  const petrolPriceInput = document.getElementById('petrolPriceInput');
+  const dieselPriceInput = document.getElementById('dieselPriceInput');
+  const savePricesBtn = document.getElementById('savePricesBtn');
+  const priceStatus = document.getElementById('priceStatus');
 
   // Toggle profile dropdown
   profileBtn.addEventListener('click', () => {
     profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
   });
 
-  logoutBtn.addEventListener('click', () => {
-    window.location.href = 'admin_login.html';
+  function ensureAdminSession() {
+    const storedAdmin = localStorage.getItem('admin_name');
+    if (!storedAdmin) {
+      window.location.replace('admin-login.html');
+      return null;
+    }
+    return storedAdmin;
+  }
+
+  const activeAdmin = ensureAdminSession();
+  if (!activeAdmin) {
+    throw new Error('Admin session missing');
+  }
+
+  // If user comes back via browser cache/back button after logout, force re-check.
+  window.addEventListener('pageshow', () => {
+    if (!localStorage.getItem('admin_name')) {
+      window.location.replace('admin-login.html');
+    }
   });
 
-  // Get admin name from query string
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('admin_name');
+    window.location.replace('admin-login.html');
+  });
+
+  // Get admin name from query string, with localStorage fallback.
   const params = new URLSearchParams(window.location.search);
-  const adminName = params.get('name') || 'Admin';
+  const adminName = params.get('name') || activeAdmin;
+  localStorage.setItem('admin_name', adminName);
   welcomeMsg.textContent = `Welcome, ${adminName}!`;
 
   // Button actions
@@ -223,6 +331,42 @@ h1#welcomeMsg {
   document.getElementById('generateCouponBtn').addEventListener('click', () => {
     window.location.href = 'admin_generate_coupon.html?name=' + encodeURIComponent(adminName);
   });
+
+  async function loadFuelPrices() {
+    try {
+      const { data } = await api.getFuelPrices();
+      petrolPriceInput.value = Number(data.petrol_price_per_litre).toFixed(2);
+      dieselPriceInput.value = Number(data.diesel_price_per_litre).toFixed(2);
+      priceStatus.textContent = 'Current prices loaded.';
+    } catch (error) {
+      priceStatus.textContent = 'Unable to load fuel prices.';
+    }
+  }
+
+  savePricesBtn.addEventListener('click', async () => {
+    const petrol = Number(petrolPriceInput.value);
+    const diesel = Number(dieselPriceInput.value);
+
+    if (!Number.isFinite(petrol) || petrol < 0 || !Number.isFinite(diesel) || diesel < 0) {
+      priceStatus.textContent = 'Enter valid non-negative prices for both fuel types.';
+      return;
+    }
+
+    try {
+      const { data } = await api.setFuelPrices({
+        petrol_price_per_litre: petrol,
+        diesel_price_per_litre: diesel,
+      });
+
+      petrolPriceInput.value = Number(data.petrol_price_per_litre).toFixed(2);
+      dieselPriceInput.value = Number(data.diesel_price_per_litre).toFixed(2);
+      priceStatus.textContent = `Saved: Petrol $${Number(data.petrol_price_per_litre).toFixed(2)}, Diesel $${Number(data.diesel_price_per_litre).toFixed(2)}.`;
+    } catch (error) {
+      priceStatus.textContent = `Failed to save prices: ${error.message}`;
+    }
+  });
+
+  loadFuelPrices();
 </script>
 
 </body>
