@@ -104,11 +104,22 @@
     .toggle-btn {
       background: transparent;
       border: 0;
-      color: var(--blue);
+      color: #FF9900;
       cursor: pointer;
-      font-weight: 600;
-      margin-top: 8px;
-      text-align: left;
+      font-weight: 700;
+      margin-top: 12px;
+      text-align: center;
+      width: 100%;
+      display: block;
+      font-size: 15px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      transition: color 0.2s;
+    }
+
+    .toggle-btn:hover, .toggle-btn:focus {
+      color: #fff;
+      background: var(--blue);
+      outline: none;
     }
 
     .msg {
@@ -176,11 +187,16 @@
       </div>
 
       <button type="button" id="toggleBtn" class="toggle-btn">Don't have an account? Sign up</button>
+      <button type="button" id="backHomeBtn" class="toggle-btn" style="color:#009cff;margin-top:8px;">Back to Home</button>
     </form>
   </main>
 
   <script src="./frontend-api.js"></script>
   <script type="module">
+        // Back to Home button
+        document.getElementById('backHomeBtn').addEventListener('click', () => {
+          window.location.href = 'index.html';
+        });
     const api = window.KibondeAPI;
 
     const authForm = document.getElementById('authForm');

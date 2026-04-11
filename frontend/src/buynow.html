@@ -25,7 +25,7 @@ body {
   min-height: 100vh;
   background: linear-gradient(135deg, var(--black), var(--blue));
   color: var(--white);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 body::before {
@@ -38,14 +38,29 @@ body::before {
   z-index: -1;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 2px;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+}
+
 .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 18px;
   flex-wrap: wrap;
   padding: 12px 14px;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.72);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
@@ -64,10 +79,12 @@ body::before {
 
 .container {
   flex: 1;
+  min-height: 0;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 24px 20px 16px;
+  padding: 10px 20px 24px;
+  overflow: hidden;
 }
 
 .card {
@@ -76,14 +93,15 @@ body::before {
   width: 100%;
   max-width: 500px;
   border-radius: 16px;
-  padding: 32px;
+  padding: 14px 32px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   text-align: center;
   margin-bottom: 12px;
+  overflow: hidden;
 }
 
 h1 {
-  margin-bottom: 24px;
+  margin-bottom: 14px;
   font-size: 28px;
   color: var(--white);
   text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
@@ -226,7 +244,7 @@ button + button { margin-left: 4%; }
     </div>
 
     <div style="display:flex; justify-content: space-between;">
-      <button id="payCashBtn">Pay with Cash</button>
+      <button id="payCashBtn">Cash on Delivery</button>
       <button id="payNowBtn">Pay Now</button>
     </div>
   </div>
@@ -366,7 +384,7 @@ async function proceedPayment(modeOfPayment){
   }
 }
 
-payCashBtn.addEventListener('click', ()=> proceedPayment('Cash'));
+payCashBtn.addEventListener('click', ()=> proceedPayment('Cash on Delivery'));
 payNowBtn.addEventListener('click', ()=> proceedPayment('PayNow'));
 
 await loadFuelPrices();

@@ -56,13 +56,20 @@ header .logo {
   position: relative;
 }
 
-.profile-btn {
-  background: transparent;
-  border: none;
+.profile-btn.logout-red {
+  background: #d7263d;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
   color: var(--white);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
+  transition: background 0.2s, transform 0.2s;
+}
+.profile-btn.logout-red:hover {
+  background: #b71f31;
+  transform: translateY(-1px);
 }
 
 .dropdown {
@@ -224,10 +231,7 @@ h1#welcomeMsg {
 <header>
   <div class="logo">Kizongo Fuel Admin</div>
   <div class="profile">
-    <button class="profile-btn" id="profileBtn">Profile ▼</button>
-    <div class="dropdown" id="profileDropdown">
-      <button id="logoutBtn">Logout</button>
-    </div>
+    <button class="profile-btn logout-red" id="logoutBtn">Logout</button>
   </div>
 </header>
 
@@ -277,8 +281,6 @@ h1#welcomeMsg {
 <script src="./frontend-api.js"></script>
 <script type="module">
   const api = window.KibondeAPI;
-  const profileBtn = document.getElementById('profileBtn');
-  const profileDropdown = document.getElementById('profileDropdown');
   const logoutBtn = document.getElementById('logoutBtn');
   const welcomeMsg = document.getElementById('welcomeMsg');
   const petrolPriceInput = document.getElementById('petrolPriceInput');
@@ -286,10 +288,6 @@ h1#welcomeMsg {
   const savePricesBtn = document.getElementById('savePricesBtn');
   const priceStatus = document.getElementById('priceStatus');
 
-  // Toggle profile dropdown
-  profileBtn.addEventListener('click', () => {
-    profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
-  });
 
   function ensureAdminSession() {
     const storedAdmin = localStorage.getItem('admin_name');

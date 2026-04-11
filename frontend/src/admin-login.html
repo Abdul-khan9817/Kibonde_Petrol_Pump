@@ -155,11 +155,16 @@
     <div>
       <button type="submit" id="submitBtn">Login</button>
     </div>
+    <button type="button" id="backHomeBtn" class="toggle-btn" style="color:#009cff;margin-top:8px;">Back to Home</button>
   </form>
 </main>
 
 <script src="./frontend-api.js"></script>
 <script type="module">
+// Back to Home button
+document.getElementById('backHomeBtn').addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
 const api = window.KibondeAPI;
 
 const adminForm = document.getElementById('adminForm');

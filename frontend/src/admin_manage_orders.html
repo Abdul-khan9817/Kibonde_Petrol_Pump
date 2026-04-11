@@ -50,12 +50,20 @@ header {
 header .logo { font-weight: 700; font-size: 24px; }
 
 .profile { position: relative; display: inline-block; }
-.profile-btn {
-  background: transparent;
-  border: none;
+.profile-btn.logout-red {
+  background: #d7263d;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
   color: var(--white);
   cursor: pointer;
+  font-weight: 700;
   font-size: 14px;
+  transition: background 0.2s, transform 0.2s;
+}
+.profile-btn.logout-red:hover {
+  background: #b71f31;
+  transform: translateY(-1px);
 }
 .dropdown {
   display: none;
@@ -155,10 +163,7 @@ button.updateBtn:hover {
 <header>
   <div class="logo">Admin Dashboard</div>
   <div class="profile">
-    <button class="profile-btn" id="profileBtn">Profile ▼</button>
-    <div class="dropdown" id="profileDropdown">
-      <button id="logoutBtn">Logout</button>
-    </div>
+    <button class="profile-btn logout-red" id="logoutBtn">Logout</button>
   </div>
 </header>
 
@@ -187,14 +192,9 @@ button.updateBtn:hover {
 <script type="module">
 const api = window.KibondeAPI;
 
-const profileBtn = document.getElementById('profileBtn');
-const profileDropdown = document.getElementById('profileDropdown');
 const logoutBtn = document.getElementById('logoutBtn');
 const ordersTableBody = document.getElementById('ordersTableBody');
 
-profileBtn.addEventListener('click', () => {
-  profileDropdown.style.display = profileDropdown.style.display === 'block' ? 'none' : 'block';
-});
 
 logoutBtn.addEventListener('click', () => {
   window.location.href = 'admin-login.html';

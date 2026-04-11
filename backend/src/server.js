@@ -9,9 +9,12 @@ const app = createApp();
 async function startServer() {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Backend API listening on port ${PORT}`);
     });
+    // --- Socket.io setup ---
+    const { initSocket } = require('../socket');
+    initSocket(server);
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

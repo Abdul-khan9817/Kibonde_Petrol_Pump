@@ -19,6 +19,8 @@
 
 body {
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, var(--black), var(--accent));
@@ -54,6 +56,16 @@ header {
   border-radius: 16px;
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
 }
 
 h1 { text-align: center; margin-bottom: 24px; font-size: 32px; }
@@ -113,7 +125,10 @@ button:hover { background:var(--orange); transform: translateY(-2px); }
 </head>
 <body>
 
-<header>Contact Us</header>
+<header style="display:flex;align-items:center;gap:12px;">
+  <span id="backArrow" style="cursor:pointer;font-size:28px;line-height:1;user-select:none;">&#8592;</span>
+  <span style="flex:1;text-align:center;">Contact Us</span>
+</header>
 
 <div class="container">
   <h1>Get in Touch</h1>
@@ -125,6 +140,9 @@ button:hover { background:var(--orange); transform: translateY(-2px); }
     <label for="name">Name</label>
     <input id="name" type="text" placeholder="Your Name" required>
 
+    <label for="contactNo">Contact No</label>
+    <input id="contactNo" type="text" placeholder="Your Contact Number" required>
+
     <label for="email">Email</label>
     <input id="email" type="email" placeholder="Your Email" required>
 
@@ -132,11 +150,26 @@ button:hover { background:var(--orange); transform: translateY(-2px); }
     <textarea id="messageInput" rows="5" placeholder="Write your message..." required></textarea>
 
     <button type="submit" id="submitBtn">Send Message</button>
+    <button type="button" id="logoutBtn" style="margin-top:12px;background:#d7263d;">Logout</button>
   </form>
+
 </div>
 
 <script src="./frontend-api.js"></script>
 <script type="module">
+// Logout button logic: clear user info and go to home page
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_name');
+    window.location.href = 'index.html';
+  });
+}
+// Back arrow navigates to home page
+document.getElementById('backArrow').addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
 const api = window.KibondeAPI;
 
 const contactForm = document.getElementById('contactForm');
@@ -154,6 +187,7 @@ contactForm.addEventListener('submit', async (e) => {
   clearMessage();
 
   const name = document.getElementById('name').value.trim();
+  const contact_no = document.getElementById('contactNo').value.trim();
   const email = document.getElementById('email').value.trim();
   const message = document.getElementById('messageInput').value.trim();
 
@@ -162,7 +196,7 @@ contactForm.addEventListener('submit', async (e) => {
   submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
 
   try {
-    await api.createMessage({ name, email, message });
+    await api.createMessage({ name, contact_no, email, message });
       showMessage('Thank you! Your message has been sent.', 'success');
       contactForm.reset();
   } catch (err) {
