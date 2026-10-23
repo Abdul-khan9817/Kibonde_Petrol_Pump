@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Kizongo Fuel</title>
+<style>
+:root {
+  --accent: #0b76ef;
+  --orange: #FF9900;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.2);
+  --card-bg: rgba(255,255,255,0.05);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--black), var(--accent));
+  color: var(--white);
+  padding: 24px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+header .logo {
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.profile {
+  position: relative;
+}
+
+.profile-btn.logout-red {
+  background: #d7263d;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: var(--white);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.2s;
+}
+.profile-btn.logout-red:hover {
+  background: #b71f31;
+  transform: translateY(-1px);
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: var(--card-bg);
+  color: var(--white);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.dropdown button {
+  display: block;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.dropdown button:hover {
+  background: var(--accent);
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+h1#welcomeMsg {
+  font-size: 28px;
+  text-align: center;
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
+}
+
+.buttons {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.price-settings {
+  width: 100%;
+  max-width: 620px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.price-settings h2 {
+  margin-bottom: 8px;
+}
+
+.price-settings p {
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.price-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.price-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.12);
+  color: var(--white);
+  font-size: 15px;
+}
+
+.save-prices-btn {
+  margin-top: 16px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--orange);
+}
+
+.save-prices-btn:hover {
+  background: var(--accent);
+}
+
+.price-status {
+  margin-top: 12px;
+  min-height: 20px;
+  font-size: 14px;
+}
+
+.buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 32px;
+  font-size: 16px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--accent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.buttons button:hover {
+  background: var(--orange);
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  stroke: currentColor;
+  transition: transform 0.2s;
+}
+
+.buttons button:hover .btn-icon {
+  transform: scale(1.1);
+}
+
+@media(max-width: 480px){
+  .buttons { flex-direction: column; gap: 16px; }
+  .buttons button { width: 100%; }
+  header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .price-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Kizongo Fuel Admin</div>
+  <div class="profile">
+    <button class="profile-btn logout-red" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<div class="container">
+  <h1 id="welcomeMsg">Welcome, Admin!</h1>
+  <div class="buttons">
+    <button id="manageOrdersBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 0a2 2 0 012 2v4a2 2 0 01-2 2H7a2 2 0 01-2-2v-4a2 2 0 012-2h6zM9 12V6a2 2 0 012-2h2a2 2 0 012 2v6"/>
+      </svg>
+      Manage Orders
+    </button>
+
+    <button id="generateCouponBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2-8h.01M6 8h.01M3 6h18v12H3V6z"/>
+      </svg>
+      Generate Coupon
+    </button>
+
+    <button id="viewMessagesBtn" onclick="window.location.href='feedback.html'">
+      <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m0 8v-8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2z"/>
+      </svg>
+      View Messages
+    </button>
+  </div>
+
+  <section class="price-settings">
+    <h2>Fuel Price Settings</h2>
+    <p>Set the current price per litre users see while ordering fuel.</p>
+    <div class="price-grid">
+      <div class="price-field">
+        <label for="petrolPriceInput">Petrol Price (per litre)</label>
+        <input type="number" id="petrolPriceInput" min="0" step="0.01" placeholder="e.g. 1.10" />
+      </div>
+      <div class="price-field">
+        <label for="dieselPriceInput">Diesel Price (per litre)</label>
+        <input type="number" id="dieselPriceInput" min="0" step="0.01" placeholder="e.g. 1.50" />
+      </div>
+    </div>
+    <button class="save-prices-btn" id="savePricesBtn">Save Fuel Prices</button>
+    <div class="price-status" id="priceStatus"></div>
+  </section>
+</div>
+
+<script src="./frontend-api.js"></script>
+<script type="module">
+  const api = window.KibondeAPI;
+  const logoutBtn = document.getElementById('logoutBtn');
+  const welcomeMsg = document.getElementById('welcomeMsg');
+  const petrolPriceInput = document.getElementById('petrolPriceInput');
+  const dieselPriceInput = document.getElementById('dieselPriceInput');
+  const savePricesBtn = document.getElementById('savePricesBtn');
+  const priceStatus = document.getElementById('priceStatus');
+
+
+  function ensureAdminSession() {
+    const storedAdmin = localStorage.getItem('admin_name');
+    if (!storedAdmin) {
+      window.location.replace('admin-login.html');
+      return null;
+    }
+    return storedAdmin;
+  }
+
+  const activeAdmin = ensureAdminSession();
+  if (!activeAdmin) {
+    throw new Error('Admin session missing');
+  }
+
+  // If user comes back via browser cache/back button after logout, force re-check.
+  window.addEventListener('pageshow', () => {
+    if (!localStorage.getItem('admin_name')) {
+      window.location.replace('admin-login.html');
+    }
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('admin_name');
+    window.location.replace('admin-login.html');
+  });
+
+  // Get admin name from query string, with localStorage fallback.
+  const params = new URLSearchParams(window.location.search);
+  const adminName = params.get('name') || activeAdmin;
+  localStorage.setItem('admin_name', adminName);
+  welcomeMsg.textContent = `Welcome, ${adminName}!`;
+
+  // Button actions
+  document.getElementById('manageOrdersBtn').addEventListener('click', () => {
+    window.location.href = 'admin_manage_orders.html?name=' + encodeURIComponent(adminName);
+  });
+
+  document.getElementById('generateCouponBtn').addEventListener('click', () => {
+    window.location.href = 'admin_generate_coupon.html?name=' + encodeURIComponent(adminName);
+  });
+
+  async function loadFuelPrices() {
+    try {
+      const { data } = await api.getFuelPrices();
+      petrolPriceInput.value = Number(data.petrol_price_per_litre).toFixed(2);
+      dieselPriceInput.value = Number(data.diesel_price_per_litre).toFixed(2);
+      priceStatus.textContent = 'Current prices loaded.';
+    } catch (error) {
+      priceStatus.textContent = 'Unable to load fuel prices.';
+    }
+  }
+
+  savePricesBtn.addEventListener('click', async () => {
+    const petrol = Number(petrolPriceInput.value);
+    const diesel = Number(dieselPriceInput.value);
+
+    if (!Number.isFinite(petrol) || petrol < 0 || !Number.isFinite(diesel) || diesel < 0) {
+      priceStatus.textContent = 'Enter valid non-negative prices for both fuel types.';
+      return;
+    }
+
+    try {
+      const { data } = await api.setFuelPrices({
+        petrol_price_per_litre: petrol,
+        diesel_price_per_litre: diesel,
+      });
+
+      petrolPriceInput.value = Number(data.petrol_price_per_litre).toFixed(2);
+      dieselPriceInput.value = Number(data.diesel_price_per_litre).toFixed(2);
+      priceStatus.textContent = `Saved: Petrol $${Number(data.petrol_price_per_litre).toFixed(2)}, Diesel $${Number(data.diesel_price_per_litre).toFixed(2)}.`;
+    } catch (error) {
+      priceStatus.textContent = `Failed to save prices: ${error.message}`;
+    }
+  });
+
+  loadFuelPrices();
+</script>
+
+</body>
+</html>

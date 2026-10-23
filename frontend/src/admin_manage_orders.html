@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="images/logo.png" type="image/png" />
+<title>Admin </title>
+<style>
+:root {
+  --orange: #FF9900;
+  --blue: #009CFF;
+  --black: #0B1F3F;
+  --white: #ffffff;
+  --overlay: rgba(0,0,0,0.4);
+  --card-bg: rgba(255,255,255,0.05);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; font-family: Inter, sans-serif; }
+
+html, body { height: 100%; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--black), var(--blue));
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: var(--overlay);
+  z-index: -1;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+header .logo { font-weight: 700; font-size: 24px; }
+
+.profile { position: relative; display: inline-block; }
+.profile-btn.logout-red {
+  background: #d7263d;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: var(--white);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.2s;
+}
+.profile-btn.logout-red:hover {
+  background: #b71f31;
+  transform: translateY(-1px);
+}
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: var(--card-bg);
+  color: var(--white);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}
+.dropdown button {
+  display: block;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--white);
+  font-weight: 600;
+}
+.dropdown button:hover { background: rgba(255,255,255,0.1); }
+
+.container {
+  flex: 1;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  margin-bottom: 32px;
+  font-size: 28px;
+  text-shadow: 1px 1px 6px rgba(0,0,0,0.5);
+}
+
+.table-card {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 24px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--white);
+}
+
+th, td {
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background: rgba(255,255,255,0.1);
+}
+
+select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(0,0,0,0.2);
+  color: var(--white);
+}
+
+button.updateBtn {
+  background: var(--orange);
+  color: var(--white);
+  padding: 6px 12px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+}
+button.updateBtn:hover {
+  background: var(--blue);
+  transform: translateY(-2px);
+}
+
+@media(max-width: 768px){
+  table { font-size: 12px; }
+  th, td { padding: 8px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Admin Dashboard</div>
+  <div class="profile">
+    <button class="profile-btn logout-red" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<div class="container">
+  <h1>Manage Orders</h1>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Fuel</th>
+          <th>Litres</th>
+          <th>Location</th>
+          <th>Payment</th>
+          <th>Price</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="./frontend-api.js"></script>
+<script type="module">
+const api = window.KibondeAPI;
+
+const logoutBtn = document.getElementById('logoutBtn');
+const ordersTableBody = document.getElementById('ordersTableBody');
+
+
+logoutBtn.addEventListener('click', () => {
+  window.location.href = 'admin-login.html';
+});
+
+async function fetchOrders(){
+  ordersTableBody.innerHTML = '';
+  try {
+    const { data: orders } = await api.listOrders();
+
+    orders.forEach(order => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${order.order_number || ''}</td>
+        <td>${order.fuel_type || ''}</td>
+        <td>${order.number_of_litres || ''}</td>
+        <td>${order.delivery_location || ''}</td>
+        <td>${order.mode_of_payment || ''}</td>
+        <td>${order.price || ''}</td>
+        <td>
+          <select id="status-${order.order_id}">
+            <option value="pending" ${order.status==='pending'?'selected':''}>Pending</option>
+            <option value="in transit" ${order.status==='in transit'?'selected':''}>In Transit</option>
+            <option value="collected" ${order.status==='collected'?'selected':''}>Collected</option>
+            <option value="delivered" ${order.status==='delivered'?'selected':''}>Delivered</option>
+          </select>
+        </td>
+        <td><button class="updateBtn">Update</button></td>
+      `;
+      ordersTableBody.appendChild(row);
+
+      const updateBtn = row.querySelector('.updateBtn');
+      updateBtn.addEventListener('click', async () => {
+        const selectEl = document.getElementById(`status-${order.order_id}`);
+        const newStatus = selectEl.value;
+        try {
+          await api.updateOrderStatus(order.order_id, newStatus);
+        alert('Status updated successfully!');
+        fetchOrders();
+        } catch (error) {
+          alert('Error updating status: ' + error.message);
+        }
+      });
+    });
+  } catch (error) {
+    alert('Error fetching orders: ' + error.message);
+  }
+}
+
+fetchOrders();
+</script>
+</body>
+</html>
